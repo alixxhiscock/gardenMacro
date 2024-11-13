@@ -4,11 +4,7 @@ import mouse
 import threading
 import random
 from tkinter import *
-import pyscreenshot as ImageGrab
-import pygetwindow as gw
 import mss
-import cv2
-import pytesseract
 from PIL import Image
 
 # global variables
