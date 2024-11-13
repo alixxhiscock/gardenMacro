@@ -137,7 +137,9 @@ def checkLocation():
         mouse.release('left')
         farm()
 def inHub():
-    if(rgb_of_pixel(f'monitor-{monitor}.png',1739,466) == (79, 236, 236)):
+    if(rgb_of_pixel(f'monitor-{monitor}.png',1739,466) == (79, 236, 236)): #PC
+        return True
+    elif(rgb_of_pixel(f'monitor-{monitor}.png',1633,383) == (85, 255, 255)): #Laptop
         return True
     else:
         return False
