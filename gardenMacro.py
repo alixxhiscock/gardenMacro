@@ -19,9 +19,9 @@ def Start(use_repellent):
     keyboard.wait('v')
     if lockMouse:
         runCommand("/shmouselock")
+    if use_repellent:
+        checkRepellent()
     while True:
-        if use_repellent:
-            checkRepellent()
         farm(crop)
 def farm(crop):
     if crop =="Wart/Carrot":
