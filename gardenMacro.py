@@ -1,3 +1,4 @@
+import customtkinter
 import keyboard
 import mouse
 import threading
@@ -60,7 +61,7 @@ def farm(crop):
         oneLength('d', 24)
     resetPos()
 def export():
-    toggleButton.config(text="Stop")
+    toggleButton.configure(text="Stop")
     threading.Thread(target=Start, daemon=True).start()
     Stop()
 
@@ -86,7 +87,7 @@ def oneLengthMelon(keytopress, lengthinsecs):
     time.sleep(0.6)
 
 def Stop():
-    toggleButton.config(text="Start")
+    toggleButton.configure(text="Start")
     keyboard.wait('x')
     keyboard.release('a')
     keyboard.release('w')
@@ -109,11 +110,11 @@ def forwardCactus():
     keyboard.release('w')
 
 def initWindow():
-    win = Tk()
+    win = customtkinter.CTk()
     win.title("Superfarmer")
     win.geometry("300x300")
 
-    frame = Frame(win,width=300,height=300)
+    frame = customtkinter.CTkFrame(win,width=300,height=300)
     frame.pack(expand=True,fill=BOTH,padx=10,pady=10)
 
     frame.columnconfigure(0, weight=1)
@@ -124,25 +125,25 @@ def initWindow():
 
     global checkbox_var
     checkbox_var=BooleanVar()
-    Checkbutton(frame, text="Use Repellent:", variable=checkbox_var, font=("Helvetica", 14)).grid(row=0, column=0, columnspan=2, sticky="n", pady=10)
-
-    Label(frame, text="Crop:", font=("Helvetica", 14)).grid(row=1, column=0, sticky="e", padx=5, pady=5)
+    check = customtkinter.CTkCheckBox(frame, text="Use Repellent:", variable=checkbox_var, font=("Helvetica", 14))
+    check.grid(row=0, column=0, columnspan=2, sticky="n", pady=10)
+    check.configure(fg_color="#d9534c")
+    customtkinter.CTkLabel(frame, text="Crop:", font=("Helvetica", 14)).grid(row=1, column=0, sticky="e", padx=5, pady=5)
 
     options = ["Melon/Pumpkin","Cactus","Wart/Carrot","Cocoa","Wheat/Potato","Mushroom"]
 
     global dropCrop
-    dropCrop = ttk.Combobox(frame, values=options, state="readonly", font=("Helvetica", 12), width=15)
-    dropCrop.current(0)
+    dropCrop = customtkinter.CTkComboBox(frame, values=options, state="readonly", font=("Helvetica", 12), width=200)
     dropCrop.grid(row=1, column=1, sticky="w", padx=5, pady=5)
 
-    Label(frame, text="Monitor:", font=("Helvetica", 14)).grid(row=2, column=0, sticky="e", padx=5, pady=5)
+    customtkinter.CTkLabel(frame, text="Monitor:", font=("Helvetica", 14)).grid(row=2, column=0, sticky="e", padx=5, pady=5)
     global dropMonitor
-    dropMonitor = ttk.Combobox(frame, values=[1,2,3], state="readonly", font=("Helvetica", 12), width=15)
-    dropMonitor.current(0)
+    dropMonitor = customtkinter.CTkComboBox(frame, values=["1","2","3"], state="readonly", font=("Helvetica", 12), width=200)
     dropMonitor.grid(row=2, column=1, sticky="w", padx=5, pady=5)
 
     global toggleButton
-    toggleButton = Button(frame, text="Macro", command=export, font=("Helvetica", 14), width=10, height=2)
+    toggleButton = customtkinter.CTkButton(frame, text="Macro", command=export, font=("Helvetica", 14), width=10, height=2)
+    toggleButton.configure(fg_color="#d9534c")
     toggleButton.grid(row=3, column=0, columnspan=2, pady=20, sticky="n")
 
     win.mainloop()
