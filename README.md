@@ -13,6 +13,7 @@ This tool aims to make farming automated, except for having to remove pests.
 - **Discord Notifier**:
   - **Screenshots**: Sends a screenshot of your monitor to Discord.
   - **Repellent Timing**: Sends a notification to Discord with the exact time the repellent expires.
+- **Mouse Lock**: Locks mouse in position, **requires SkyHanni**.
 
 ## Installation
 

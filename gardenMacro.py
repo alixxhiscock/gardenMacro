@@ -17,8 +17,9 @@ import os
 
 def Start(use_repellent):
     keyboard.wait('v')
+    if lockMouse:
+        lockMouse()
     while True:
-        print(use_repellent)
         if use_repellent:
             checkRepellent()
         farm(crop)
@@ -63,8 +64,9 @@ def farm(crop):
     resetPos()
 def export():
     toggleButton.configure(text="Stop")
-    global use_repellent
+    global use_repellent, lockMouse
     use_repellent = checkbox_var.get()
+    lockMouse = checkLock_var.get()
     writeConfig()
     threading.Thread(target=Start,args=(use_repellent,), daemon=True).start()
     Stop()
@@ -105,7 +107,7 @@ def resetPos():
     time.sleep(0.02)
     keyboard.send('t')
     time.sleep(0.2)
-    keyboard.write('/warp garden', random.uniform(0.08, 0.13))
+    keyboard.write('/warp garden')
     time.sleep(0.2)
     keyboard.send('enter')
 
@@ -131,13 +133,18 @@ def initWindow():
     frame.rowconfigure(3, weight=1)
 
     font = ("Helvetica", 14)
-    global checkbox_var, monitor
-    checkbox_var = BooleanVar()
+    global checkbox_var, monitor, checkLock_var
+    checkbox_var , checkLock_var= BooleanVar(), BooleanVar()
+
 
     # Checkbox with reduced gap
-    check = customtkinter.CTkCheckBox(frame, text="Use Repellent:", variable=checkbox_var, font=font)
-    check.grid(row=0, column=0, columnspan=2, sticky="n", pady=18)
+    check = customtkinter.CTkCheckBox(frame, text="Use Repellent", variable=checkbox_var, font=font)
+    check.grid(row=0, column=0, columnspan=1, sticky="n", pady=18)
     check.configure(fg_color="#d9534c")
+
+    checkLock = customtkinter.CTkCheckBox(frame, text="Lock Mouse", variable=checkLock_var, font=font)
+    checkLock.grid(row=0, column=1, columnspan=1, sticky="n", pady=18)
+    checkLock.configure(fg_color="#d9534c")
 
     # Label and dropdown for Crop, ensuring alignment with dropdown
     customtkinter.CTkLabel(frame, text="Crop:", font=font).grid(row=1, column=0, sticky="e", padx=40, pady=5)
@@ -184,15 +191,12 @@ def initWindow():
 def screenshotFore():
     with mss.mss() as mss_instance:
         mss_instance.shot(mon=int(monitor), output=f'monitor-{monitor}.png')
+
 def checkLocation():
     screenshotFore()
     if inHub():
         print("Detected in Hub or Village")
-        keyboard.send('t')
-        time.sleep(0.2)
-        keyboard.write('/warp garden', random.uniform(0.08, 0.13))
-        time.sleep(0.2)
-        keyboard.send('enter')
+        resetPos()
         time.sleep(2)
         keyboard.release('a')
         keyboard.release('d')
@@ -249,21 +253,26 @@ def readConfig():
     monitor = monitor or '1'
     use_repellent = config.get('settings', 'use_repellent', fallback=False)
     use_repellent = use_repellent or 'False'
-    print(f'Set crop to {crop}, monitor to {monitor}, use_repellent to {use_repellent}')
-    return crop,monitor,use_repellent
+    lockMouse = config.get('settings','lockMouse',fallback=True)
+    lockMouse = lockMouse or 'True'
+    print(f'Set crop to {crop}, monitor to {monitor}, use_repellent to {use_repellent}, lockMouse to {lockMouse}')
+    return crop,monitor,use_repellent,lockMouse
+
+def lockMouse():
+    keyboard.send("/shmouselock")
 
 def setConfig():
-    global crop,monitor,use_repellent
-    crop, monitor, use_repellent=readConfig()
-    print(crop,monitor,use_repellent)
+    global crop,monitor,use_repellent,lockMouse
+    crop, monitor, use_repellent,lockMouse =readConfig()
 
 def writeConfig():
-    global crop,monitor,use_repellent
+    global crop,monitor,use_repellent,lockMouse
     config = configparser.ConfigParser()
     config['settings'] = {
         'crop': crop,
         'monitor': monitor,
-        'use_repellent': use_repellent
+        'use_repellent': use_repellent,
+        'lockMouse': lockMouse
     }
     with open('config.ini', 'w') as configfile:
         config.write(configfile)
@@ -281,5 +290,4 @@ def checkRepellent():
     sendRepellentTimeDiscord()
 
 if __name__ == '__main__':
-    #initWindow()
-    sendRepellentTimeDiscord()
+    initWindow()
