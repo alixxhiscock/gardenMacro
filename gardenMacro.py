@@ -18,7 +18,7 @@ import os
 def Start(use_repellent):
     keyboard.wait('v')
     if lockMouse:
-        lockMouse()
+        runCommand("/shmouselock")
     while True:
         if use_repellent:
             checkRepellent()
@@ -61,7 +61,7 @@ def farm(crop):
         if (checkLocation()):
             return True
         oneLength('d', 24)
-    resetPos()
+    runCommand('/warp garden')
 def export():
     toggleButton.configure(text="Stop")
     global use_repellent, lockMouse
@@ -103,11 +103,11 @@ def Stop():
     raise SystemExit(0)
 
 
-def resetPos():
+def runCommand(command):
     time.sleep(0.02)
     keyboard.send('t')
     time.sleep(0.2)
-    keyboard.write('/warp garden')
+    keyboard.write(command)
     time.sleep(0.2)
     keyboard.send('enter')
 
@@ -196,7 +196,7 @@ def checkLocation():
     screenshotFore()
     if inHub():
         print("Detected in Hub or Village")
-        resetPos()
+        runCommand('/warp garden')
         time.sleep(2)
         keyboard.release('a')
         keyboard.release('d')
@@ -257,9 +257,6 @@ def readConfig():
     lockMouse = lockMouse or 'True'
     print(f'Set crop to {crop}, monitor to {monitor}, use_repellent to {use_repellent}, lockMouse to {lockMouse}')
     return crop,monitor,use_repellent,lockMouse
-
-def lockMouse():
-    keyboard.send("/shmouselock")
 
 def setConfig():
     global crop,monitor,use_repellent,lockMouse
