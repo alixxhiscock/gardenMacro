@@ -172,7 +172,7 @@ def initWindow():
     # Configure the Macro Button, without stretching too much
     global toggleButton
     toggleButton = customtkinter.CTkButton(frame, text="Macro", command=export, font=font, height=40)
-    toggleButton.configure(fg_color="#d9534c")
+    toggleButton.configure(fg_color="#3c9e56")
     toggleButton.grid(row=3, column=1, columnspan=1, pady=10, padx=10,
                       sticky="ew")  # Button stretches to fill the space
 
