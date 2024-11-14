@@ -11,12 +11,14 @@ import mss
 from PIL import Image
 from discord import SyncWebhook, Embed, File
 from dotenv import load_dotenv
+import requests
 load_dotenv()
 import os
 
 def Start(use_repellent):
     keyboard.wait('v')
     while True:
+        print(use_repellent)
         if use_repellent:
             checkRepellent()
         farm(crop)
@@ -279,4 +281,5 @@ def checkRepellent():
     sendRepellentTimeDiscord()
 
 if __name__ == '__main__':
-    initWindow()
+    #initWindow()
+    sendRepellentTimeDiscord()
