@@ -4,7 +4,6 @@ import mouse
 import threading
 import random
 from tkinter import *
-from tkinter import ttk
 import time
 import datetime
 import mss
@@ -14,14 +13,13 @@ from dotenv import load_dotenv
 load_dotenv()
 import os
 
-def Start():
+def Start(use_repellent):
     keyboard.wait('v')
     while True:
-        farm(str(dropCrop.get()))
-
+        if use_repellent:
+            checkRepellent()
+        farm(crop)
 def farm(crop):
-    if(checkbox_var.get()):
-        checkRepellent()
     if crop =="Wart/Carrot":
         oneLength('a', 120)
         oneLength('d', 120)
@@ -62,7 +60,8 @@ def farm(crop):
     resetPos()
 def export():
     toggleButton.configure(text="Stop")
-    threading.Thread(target=Start, daemon=True).start()
+    use_repellent = checkbox_var.get()
+    threading.Thread(target=Start,args=(use_repellent,), daemon=True).start()
     Stop()
 
 
@@ -123,7 +122,7 @@ def initWindow():
     frame.rowconfigure(1, weight=1)
     frame.rowconfigure(2, weight=1)
 
-    global checkbox_var
+    global checkbox_var, monitor
     checkbox_var=BooleanVar()
     check = customtkinter.CTkCheckBox(frame, text="Use Repellent:", variable=checkbox_var, font=("Helvetica", 14))
     check.grid(row=0, column=0, columnspan=2, sticky="n", pady=10)
@@ -131,15 +130,22 @@ def initWindow():
     customtkinter.CTkLabel(frame, text="Crop:", font=("Helvetica", 14)).grid(row=1, column=0, sticky="e", padx=5, pady=5)
 
     options = ["Melon/Pumpkin","Cactus","Wart/Carrot","Cocoa","Wheat/Potato","Mushroom"]
-
+    def setCrop(choice):
+        global crop
+        crop=choice
     global dropCrop
-    dropCrop = customtkinter.CTkComboBox(frame, values=options, state="readonly", font=("Helvetica", 12), width=200)
+    dropCrop = customtkinter.CTkComboBox(frame, values=options,command=setCrop, state="readonly", font=("Helvetica", 12), width=200)
     dropCrop.grid(row=1, column=1, sticky="w", padx=5, pady=5)
+    setCrop("Melon/Pumpkin")
 
     customtkinter.CTkLabel(frame, text="Monitor:", font=("Helvetica", 14)).grid(row=2, column=0, sticky="e", padx=5, pady=5)
-    global dropMonitor
-    dropMonitor = customtkinter.CTkComboBox(frame, values=["1","2","3"], state="readonly", font=("Helvetica", 12), width=200)
+    def setMonitor(choice):
+        global monitor
+        monitor=choice
+
+    dropMonitor = customtkinter.CTkComboBox(frame, values=['1','2','3'],command=setMonitor, state="readonly", font=("Helvetica", 12), width=200)
     dropMonitor.grid(row=2, column=1, sticky="w", padx=5, pady=5)
+    setMonitor("1")
 
     global toggleButton
     toggleButton = customtkinter.CTkButton(frame, text="Macro", command=export, font=("Helvetica", 14), width=10, height=2)
@@ -147,10 +153,9 @@ def initWindow():
     toggleButton.grid(row=3, column=0, columnspan=2, pady=20, sticky="n")
 
     win.mainloop()
-
 def screenshotFore():
     with mss.mss() as mss_instance:
-        mss_instance.shot(mon=dropMonitor.get(), output=f'monitor-{dropMonitor.get()}.png')
+        mss_instance.shot(mon=int(monitor), output=f'monitor-{monitor}.png')
 def checkLocation():
     screenshotFore()
     if inHub():
@@ -164,11 +169,11 @@ def checkLocation():
         keyboard.release('a')
         keyboard.release('d')
         mouse.release('left')
-        farm()
+        farm(crop)
 def inHub():
-    if(rgb_of_pixel(f'monitor-{dropMonitor.get()}.png',1739,466) == (79, 236, 236)): #PC
+    if(rgb_of_pixel(f'monitor-{monitor}.png',1802,491) == (77,231,231)): #PC
         return True
-    elif(rgb_of_pixel(f'monitor-{dropMonitor.get()}.png',1633,383) == (85, 255, 255)): #Laptop
+    elif(rgb_of_pixel(f'monitor-{monitor}.png',1633,383) == (85, 255, 255)): #Laptop
         return True
     else:
         return False
