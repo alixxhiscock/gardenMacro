@@ -1,3 +1,4 @@
+import configparser
 import customtkinter
 import keyboard
 import mouse
@@ -60,9 +61,12 @@ def farm(crop):
     resetPos()
 def export():
     toggleButton.configure(text="Stop")
+    global use_repellent
     use_repellent = checkbox_var.get()
+    writeConfig()
     threading.Thread(target=Start,args=(use_repellent,), daemon=True).start()
     Stop()
+
 
 
 def oneLength(keytopress, lengthinsecs):
@@ -113,46 +117,68 @@ def initWindow():
     win.title("Superfarmer")
     win.geometry("300x300")
 
-    frame = customtkinter.CTkFrame(win,width=300,height=300)
-    frame.pack(expand=True,fill=BOTH,padx=10,pady=10)
+    frame = customtkinter.CTkFrame(win, width=320, height=320)
+    frame.pack(expand=True, fill="both", padx=10, pady=10)
 
-    frame.columnconfigure(0, weight=1)
-    frame.columnconfigure(1, weight=1)
-    frame.rowconfigure(0, weight=1)
+    # Adjust column and row configuration
+    frame.columnconfigure(0, weight=1)  # First column (for buttons and labels)
+    frame.columnconfigure(1, weight=1)  # Second column (for buttons and dropdowns)
+    frame.rowconfigure(0, weight=0)
     frame.rowconfigure(1, weight=1)
     frame.rowconfigure(2, weight=1)
+    frame.rowconfigure(3, weight=1)
 
+    font = ("Helvetica", 14)
     global checkbox_var, monitor
-    checkbox_var=BooleanVar()
-    check = customtkinter.CTkCheckBox(frame, text="Use Repellent:", variable=checkbox_var, font=("Helvetica", 14))
-    check.grid(row=0, column=0, columnspan=2, sticky="n", pady=10)
-    check.configure(fg_color="#d9534c")
-    customtkinter.CTkLabel(frame, text="Crop:", font=("Helvetica", 14)).grid(row=1, column=0, sticky="e", padx=5, pady=5)
+    checkbox_var = BooleanVar()
 
-    options = ["Melon/Pumpkin","Cactus","Wart/Carrot","Cocoa","Wheat/Potato","Mushroom"]
+    # Checkbox with reduced gap
+    check = customtkinter.CTkCheckBox(frame, text="Use Repellent:", variable=checkbox_var, font=font)
+    check.grid(row=0, column=0, columnspan=2, sticky="n", pady=18)
+    check.configure(fg_color="#d9534c")
+
+    # Label and dropdown for Crop, ensuring alignment with dropdown
+    customtkinter.CTkLabel(frame, text="Crop:", font=font).grid(row=1, column=0, sticky="e", padx=40, pady=5)
+
+    options = ["Melon/Pumpkin", "Cactus", "Wart/Carrot", "Cocoa", "Wheat/Potato", "Mushroom"]
+
     def setCrop(choice):
         global crop
-        crop=choice
+        crop = choice
+
     global dropCrop
-    dropCrop = customtkinter.CTkComboBox(frame, values=options,command=setCrop, state="readonly", font=("Helvetica", 12), width=200)
-    dropCrop.grid(row=1, column=1, sticky="w", padx=5, pady=5)
+    dropCrop = customtkinter.CTkComboBox(frame, values=options, command=setCrop, state="readonly", font=font)
+    dropCrop.grid(row=1, column=1, sticky="ew", padx=20, pady=5, columnspan=1)
     setCrop("Melon/Pumpkin")
 
-    customtkinter.CTkLabel(frame, text="Monitor:", font=("Helvetica", 14)).grid(row=2, column=0, sticky="e", padx=5, pady=5)
+    # Label and dropdown for Monitor, ensuring alignment with dropdown
+    customtkinter.CTkLabel(frame, text="Monitor:", font=font).grid(row=2, column=0, sticky="e", padx=40, pady=5)
+
     def setMonitor(choice):
         global monitor
-        monitor=choice
+        monitor = choice
 
-    dropMonitor = customtkinter.CTkComboBox(frame, values=['1','2','3'],command=setMonitor, state="readonly", font=("Helvetica", 12), width=200)
-    dropMonitor.grid(row=2, column=1, sticky="w", padx=5, pady=5)
+    dropMonitor = customtkinter.CTkComboBox(frame, values=['1', '2', '3'], command=setMonitor, state="readonly",font=font)
+    dropMonitor.grid(row=2, column=1, sticky="ew", padx=20, pady=5, columnspan=1)
     setMonitor("1")
 
+    # Configure the Previous Button with appropriate padding and size
+    global previousButton
+    previousButton = customtkinter.CTkButton(frame, text="Use Previous", command=prevCommand, font=font, height=40)
+    previousButton.configure(fg_color="#ac59ff")
+    previousButton.grid(row=3, column=0, columnspan=1, pady=10, padx=10,
+                        sticky="ew")  # Button stretches to fill the space
+
+    # Configure the Macro Button, without stretching too much
     global toggleButton
-    toggleButton = customtkinter.CTkButton(frame, text="Macro", command=export, font=("Helvetica", 14), width=10, height=2)
+    toggleButton = customtkinter.CTkButton(frame, text="Macro", command=export, font=font, height=40)
     toggleButton.configure(fg_color="#d9534c")
-    toggleButton.grid(row=3, column=0, columnspan=2, pady=20, sticky="n")
+    toggleButton.grid(row=3, column=1, columnspan=1, pady=10, padx=10,
+                      sticky="ew")  # Button stretches to fill the space
 
     win.mainloop()
+
+
 def screenshotFore():
     with mss.mss() as mss_instance:
         mss_instance.shot(mon=int(monitor), output=f'monitor-{monitor}.png')
@@ -211,6 +237,38 @@ def calcTimeMessage(days,hours,minutes):
     target_time = datetime.datetime.now() + datetime.timedelta(days=days, hours=hours, minutes=minutes)
     timestamp = int(time.mktime(target_time.timetuple()))
     return f"<t:{timestamp}:R>"
+
+def readConfig():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    crop=config.get('settings','crop',fallback="Melon/Pumpkin")
+    crop = crop or "Melon/Pumpkin"
+    monitor = config.get('settings', 'monitor', fallback='1')
+    monitor = monitor or '1'
+    use_repellent = config.get('settings', 'use_repellent', fallback=False)
+    use_repellent = use_repellent or 'False'
+    print(f'Set crop to {crop}, monitor to {monitor}, use_repellent to {use_repellent}')
+    return crop,monitor,use_repellent
+
+def setConfig():
+    global crop,monitor,use_repellent
+    crop, monitor, use_repellent=readConfig()
+    print(crop,monitor,use_repellent)
+
+def writeConfig():
+    global crop,monitor,use_repellent
+    config = configparser.ConfigParser()
+    config['settings'] = {
+        'crop': crop,
+        'monitor': monitor,
+        'use_repellent': use_repellent
+    }
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+
+def prevCommand():
+    setConfig()
+    export()
 
 def checkRepellent():
     keyboard.press('7')
