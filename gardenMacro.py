@@ -235,7 +235,7 @@ def sendRepellentTimeDiscord():
     sendDiscord(os.getenv('TIMEWEBHOOK'),embed=embed)
 
 def sendScreenshotDiscord():
-    with open("monitor-1.png","rb") as img_file:
+    with open(f"monitor-{monitor}.png","rb") as img_file:
         file=File(img_file,"ss.png")
         sendDiscord(os.getenv('IMAGEWEBHOOK'),image=file)
 
