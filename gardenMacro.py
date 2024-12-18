@@ -64,9 +64,10 @@ def farm(crop):
     runCommand('/warp garden')
 def export():
     toggleButton.configure(text="Stop")
-    global use_repellent, lockMouse
+    global use_repellent, lockMouse, isFly
     use_repellent = checkbox_var.get()
     lockMouse = checkLock_var.get()
+    isFly = checkFly_var.get()
     writeConfig()
     threading.Thread(target=Start,args=(use_repellent,), daemon=True).start()
     Stop()
@@ -119,7 +120,7 @@ def forwardCactus():
 def initWindow():
     win = customtkinter.CTk()
     win.title("Superfarmer")
-    win.geometry("300x300")
+    win.geometry("350x350")
 
     frame = customtkinter.CTkFrame(win, width=320, height=320)
     frame.pack(expand=True, fill="both", padx=10, pady=10)
@@ -128,13 +129,14 @@ def initWindow():
     frame.columnconfigure(0, weight=1)  # First column (for buttons and labels)
     frame.columnconfigure(1, weight=1)  # Second column (for buttons and dropdowns)
     frame.rowconfigure(0, weight=0)
-    frame.rowconfigure(1, weight=1)
+    frame.rowconfigure(1, weight=0)
     frame.rowconfigure(2, weight=1)
     frame.rowconfigure(3, weight=1)
+    frame.rowconfigure(4, weight=1)
 
     font = ("Helvetica", 14)
-    global checkbox_var, monitor, checkLock_var
-    checkbox_var , checkLock_var= BooleanVar(), BooleanVar()
+    global checkbox_var, monitor, checkLock_var, checkFly_var
+    checkbox_var , checkLock_var, checkFly_var = BooleanVar(), BooleanVar(), BooleanVar()
 
 
     # Checkbox with reduced gap
@@ -146,8 +148,12 @@ def initWindow():
     checkLock.grid(row=0, column=1, columnspan=1, sticky="n", pady=18)
     checkLock.configure(fg_color="#d9534c")
 
+    checkFly = customtkinter.CTkCheckBox(frame, text="Stop Flying", variable=checkFly_var, font=font)
+    checkFly.grid(row=1, column=0, columnspan=1, sticky="n", pady=18)
+    checkFly.configure(fg_color="#d9534c")
+
     # Label and dropdown for Crop, ensuring alignment with dropdown
-    customtkinter.CTkLabel(frame, text="Crop:", font=font).grid(row=1, column=0, sticky="e", padx=40, pady=5)
+    customtkinter.CTkLabel(frame, text="Crop:", font=font).grid(row=2, column=0, sticky="e", padx=40, pady=5)
 
     options = ["Melon/Pumpkin", "Cactus", "Wart/Carrot", "Cocoa", "Wheat/Potato", "Mushroom"]
 
@@ -157,32 +163,32 @@ def initWindow():
 
     global dropCrop
     dropCrop = customtkinter.CTkComboBox(frame, values=options, command=setCrop, state="readonly", font=font)
-    dropCrop.grid(row=1, column=1, sticky="ew", padx=20, pady=5, columnspan=1)
+    dropCrop.grid(row=2, column=1, sticky="ew", padx=20, pady=5, columnspan=1)
     setCrop("Melon/Pumpkin")
 
     # Label and dropdown for Monitor, ensuring alignment with dropdown
-    customtkinter.CTkLabel(frame, text="Monitor:", font=font).grid(row=2, column=0, sticky="e", padx=40, pady=5)
+    customtkinter.CTkLabel(frame, text="Monitor:", font=font).grid(row=3, column=0, sticky="e", padx=40, pady=5)
 
     def setMonitor(choice):
         global monitor
         monitor = choice
 
     dropMonitor = customtkinter.CTkComboBox(frame, values=['1', '2', '3'], command=setMonitor, state="readonly",font=font)
-    dropMonitor.grid(row=2, column=1, sticky="ew", padx=20, pady=5, columnspan=1)
+    dropMonitor.grid(row=3, column=1, sticky="ew", padx=20, pady=5, columnspan=1)
     setMonitor("1")
 
     # Configure the Previous Button with appropriate padding and size
     global previousButton
     previousButton = customtkinter.CTkButton(frame, text="Use Previous", command=prevCommand, font=font, height=40)
     previousButton.configure(fg_color="#ac59ff")
-    previousButton.grid(row=3, column=0, columnspan=1, pady=10, padx=10,
+    previousButton.grid(row=4, column=0, columnspan=1, pady=10, padx=10,
                         sticky="ew")  # Button stretches to fill the space
 
     # Configure the Macro Button, without stretching too much
     global toggleButton
     toggleButton = customtkinter.CTkButton(frame, text="Macro", command=export, font=font, height=40)
     toggleButton.configure(fg_color="#3c9e56")
-    toggleButton.grid(row=3, column=1, columnspan=1, pady=10, padx=10,
+    toggleButton.grid(row=4, column=1, columnspan=1, pady=10, padx=10,
                       sticky="ew")  # Button stretches to fill the space
 
     win.mainloop()
@@ -201,6 +207,15 @@ def checkLocation():
         keyboard.release('a')
         keyboard.release('d')
         mouse.release('left')
+        if(isFly):
+            keyboard.press(' ')
+            time.sleep(0.1)
+            keyboard.release(' ')
+            time.sleep(0.1)
+            keyboard.press(' ')
+            time.sleep(0.1)
+            keyboard.release(' ')
+            time.sleep(0.1)
         farm(crop)
 def inHub():
     if(rgb_of_pixel(f'monitor-{monitor}.png',1802,491) == (77,231,231)): #PC
